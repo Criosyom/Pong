@@ -1,8 +1,12 @@
 #pragma once
-//#include "Entity.h"
+#include "Inputs.h"
 #include "Texture.h"
-#include "Graphics.h"
-
+#include "Timer.h"
+#include "Fonts.h"
+#include <sstream>
+#include <iomanip>
+#include <math.h>
+#include <algorithm>
 class Game
 {
 public:
@@ -18,6 +22,7 @@ public:
 
 private:
 
+
 	SDL_Event hEvents;
 	Graphics* hGraphics;
 
@@ -26,9 +31,16 @@ private:
 	Texture* middleLine;
 	Texture* ball;
 
-	SDL_Rect src, dst;
-
+	Inputs inputs;
+	Fonts fonts;
+	Fonts fonts2ElectricBoogaloo;
+	SDL_Texture* bruh;
+	std::stringstream stream;
 
 	bool hQuit;
 	
+	const int FPS = 60;
+	int countedFrames;
+
+
 };

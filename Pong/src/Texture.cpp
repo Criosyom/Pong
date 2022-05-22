@@ -28,10 +28,10 @@ SDL_Texture* Texture::loadTexture(const char* fileName)
 
 }
 
-void Texture::renderTexture(int dstX, int dstY, int dstW, int dstH)
+void Texture::renderTexture(int dstW, int dstH)
 {
-	hDestRect.x = dstX;
-	hDestRect.y = dstY;
+	hDestRect.x = hPos.x;
+	hDestRect.y = hPos.y;
 	hDestRect.w = dstW;
 	hDestRect.h = dstH;
 	SDL_RenderCopy(hGraphics->getRenderer(), hTexture, NULL, &hDestRect);

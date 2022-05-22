@@ -164,6 +164,7 @@
     <ClInclude Include="src\Fonts.h" />
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\Graphics.h" />
+    <ClInclude Include="src\Inputs.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Timer.h" />
     <ClInclude Include="src\Transform.h" />

@@ -8,15 +8,16 @@ class Texture : public Entity
 {
 public:
 
-	SDL_Texture* loadTexture(const char* fileName) override;
+	SDL_Texture* loadTexture(const char* fileName);
 
-	void renderTexture(int dstX, int dstY, int dstW, int dstH) override;
+	void renderTexture(int dstW, int dstH);
 	void renderClippedTexture(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH);
 
 
 
 	Graphics* getGraphics() { return hGraphics; }
 	SDL_Texture* getTexture() { return hTexture; }
+	
 
 	Texture();
 
