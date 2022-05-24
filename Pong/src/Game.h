@@ -4,9 +4,8 @@
 #include "Timer.h"
 #include "Fonts.h"
 #include <sstream>
-#include <iomanip>
 #include <math.h>
-#include <algorithm>
+#include <map>
 class Game
 {
 public:
@@ -26,19 +25,17 @@ private:
 	SDL_Event hEvents;
 	Graphics* hGraphics;
 
-	Texture* playerPaddle;
-	Texture* opponentPaddle;
-	Texture* middleLine;
-	Texture* ball;
+	std::map<std::string, Texture*> Textures;
+	std::map<std::string, Fonts> Text;
 
 	Inputs inputs;
-	Fonts fonts;
-	Fonts fonts2ElectricBoogaloo;
-	SDL_Texture* bruh;
 	std::stringstream stream;
 
 	bool hQuit;
-	
+
+	bool q, w, e, r;
+
+
 	const int FPS = 60;
 	int countedFrames;
 

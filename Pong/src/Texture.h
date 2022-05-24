@@ -17,10 +17,10 @@ public:
 
 	Graphics* getGraphics() { return hGraphics; }
 	SDL_Texture* getTexture() { return hTexture; }
+	SDL_Rect* getDestRect() { return &hDestRect; }
 	
 
-	Texture();
-
+	Texture(Vector2 startingPos = Vector2(0.0f, 0.0f));
 	~Texture();
 private:
 

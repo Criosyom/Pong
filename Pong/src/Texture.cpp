@@ -2,8 +2,10 @@
 
 
 
-Texture::Texture()
+Texture::Texture(Vector2 startingPos)
 {
+	hPos.x = startingPos.x;
+	hPos.y = startingPos.y;
 
 	hGraphics = hGraphics->instance();
 }
@@ -44,8 +46,8 @@ void Texture::renderClippedTexture(int srcX, int srcY, int srcW, int srcH, int d
 	hSrcRect.y = srcY;
 	hSrcRect.w = srcW;
 	hSrcRect.h = srcH;
-	hDestRect.x = dstX;
-	hDestRect.y = dstY;
+	hDestRect.x = hPos.x;
+	hDestRect.y = hPos.y;
 	hDestRect.w = dstW;
 	hDestRect.h = dstH;
 	SDL_RenderCopy(hGraphics->getRenderer(), hTexture, &hSrcRect, &hDestRect);
