@@ -7,7 +7,9 @@ Game::Game()
 {
 	hQuit = false;
 	hGraphics = hGraphics->instance();
-	
+	hCollision = Collision::instance();
+	texture = Texture::instance();
+	SDL_Init(SDL_INIT_EVERYTHING);
 }
 
 Game::~Game()
@@ -22,7 +24,6 @@ Game* Game::instance()
 	if (game == NULL)
 	{
 		game = new Game;
-
 	}
 	return game;
 }
@@ -31,24 +32,26 @@ void Game::loadContent()
 {
 	hGraphics->init();
 	if (TTF_Init() == -1) { std::cout << "SDL_ttf could not initialize! SDL_ttf Error: " << TTF_GetError() << '\n'; }
-	Textures["playerPaddle"] = new Texture(Vector2(30, hGraphics->getWindowHeight() / 2 - 25));
-	Textures["opponentPaddle"] = new Texture(Vector2(hGraphics->getWindowWidth() - 40, hGraphics->getWindowHeight() / 2 - 25));
-	Textures["middleLine"] = new Texture();
-	Textures["ball"] = new Texture(Vector2(hGraphics->getWindowWidth() / 2 - 11, hGraphics->getWindowHeight() / 2 - 10));
-	Textures["upperBorder"] = new Texture(Vector2(0.0f, -6.0f));
-	Textures["lowerBorder"] = new Texture(Vector2(0.0f, hGraphics->getWindowHeight()));
+	texture->Textures["playerPaddleMiddle"] = new Texture(Vector2(30, hGraphics->getWindowHeight() / 2 - 25), NULL, "pads");
+	texture->Textures["playerPaddleTop"] = new Texture(Vector2(0, -20), texture->Textures["playerPaddleMiddle"], "pads");
+	texture->Textures["playerPaddleBottom"] = new Texture(Vector2(0, 20), texture->Textures["playerPaddleMiddle"], "pads");
+	texture->Textures["opponentPaddleMiddle"] = new Texture(Vector2(hGraphics->getWindowWidth() - 40, hGraphics->getWindowHeight() / 2 - 25), NULL, "pads");
+	texture->Textures["opponentPaddleTop"] = new Texture(Vector2(0, -20), texture->Textures["opponentPaddleMiddle"], "pads");
+	texture->Textures["opponentPaddleBottom"] = new Texture(Vector2(0, 20), texture->Textures["opponentPaddleMiddle"], "pads");
+	texture->Textures["middleLine"] = new Texture(Vector2(NULL, NULL), NULL, "pads");
+	texture->Textures["ball"] = new Texture(Vector2(hGraphics->getWindowWidth() / 2 - 8, hGraphics->getWindowHeight() / 2 - 7));
+	texture->Textures["topBoundary"] = new Texture(Vector2(0.0f, -6.0f), NULL, "pads");
+	texture->Textures["bottomBoundary"] = new Texture(Vector2(0.0f, hGraphics->getWindowHeight()), NULL, "pads");
+	texture->Textures["leftBoundary"] = new Texture(Vector2(-6.0f, 0.0f), NULL, "pads");
+	texture->Textures["rightBoundary"] = new Texture(Vector2(hGraphics->getWindowWidth(), 0.0f), NULL, "pads");
 
-	Textures["playerPaddle"]->loadTexture("assets/pads.png");
-	Textures["opponentPaddle"]->loadTexture("assets/pads.png");
-	Textures["middleLine"]->loadTexture("assets/pads.png");
-	Textures["ball"]->loadTexture("assets/ball.png");
-	Textures["upperBorder"]->loadTexture("assets/pads.png");
-	Textures["lowerBorder"]->loadTexture("assets/pads.png");
-
-
-	for (std::pair<std::string, Texture*> t : Textures)
+	texture->Textures["ball"]->loadTexture("assets/ball.png");
+	for (std::pair<std::string, Texture*> t : texture->Textures)
 	{
-		
+		if (t.second->sameTextureStr == "pads")
+		{
+			t.second->loadTexture("assets/pads.png");
+		}
 	}
 
 	Text["fpsText"].loadText("assets/Hakugyokurou.ttf", "fps", { 255, 255, 255 }, 14.0f);
@@ -60,75 +63,73 @@ void Game::run()
 	Timer timer;
 	while (!hQuit)
 	{
+
 		timer.startTime();
 		SDL_PollEvent(&hEvents);
 		if (hEvents.type == SDL_QUIT) { hQuit = true; }
 		float avgFps = countedFrames / (timer.getStartTime() / 1000.0f);
-		stream.str("");
-		stream << roundf(avgFps * 10) / 10;
-		Text["avgFpsText"].loadText("assets/Hakugyokurou.ttf", stream.str().c_str(), {255, 255, 255}, 14.0f);
+		fpsCount.str("");
+		fpsCount << roundf(avgFps * 10) / 10;
+		leftScore.str("");
+		leftScore << hCollision->leftPoints;
+		rightScore.str("");
+		rightScore << hCollision->rightPoints;
+		Text["avgFpsText"].loadText("assets/Hakugyokurou.ttf", fpsCount.str().c_str(), {255, 255, 255}, 14.0f);
+		Text["playerPoints"].loadText("assets/bit5x3.ttf", leftScore.str().c_str(), {255, 255, 255}, 80.0f);
+		Text["opponentPoints"].loadText("assets/bit5x3.ttf", rightScore.str().c_str(), {255, 255, 255}, 80.0f);
 
-		bool collidedUpper = SDL_HasIntersection(Textures["playerPaddle"]->getDestRect(), Textures["upperBorder"]->getDestRect());
-		bool collidedLower = SDL_HasIntersection(Textures["playerPaddle"]->getDestRect(), Textures["lowerBorder"]->getDestRect());
-		if (inputs.currentKeyStates[SDL_SCANCODE_W] && !inputs.currentKeyStates[SDL_SCANCODE_S] && !collidedUpper)
+		bool collidedTop = SDL_HasIntersectionF(texture->Textures["playerPaddleTop"]->getDestRect(), texture->Textures["topBoundary"]->getDestRect());
+		bool collidedBottom = SDL_HasIntersectionF(texture->Textures["playerPaddleBottom"]->getDestRect(), texture->Textures["bottomBoundary"]->getDestRect());
+		if (inputs.currentKeyStates[SDL_SCANCODE_W] && !inputs.currentKeyStates[SDL_SCANCODE_S] && !collidedTop)
 		{
-			Textures["playerPaddle"]->translate(Vector2(0.0f, -7.0f));
-			Textures["opponentPaddle"]->translate(Vector2(0.0f, -7.0f));
+			texture->Textures["playerPaddleMiddle"]->translate(Vector2(0.0f, -6.0f));
+			texture->Textures["opponentPaddleMiddle"]->translate(Vector2(0.0f, -6.0f));
 		}
-		if (inputs.currentKeyStates[SDL_SCANCODE_S] && !collidedLower)
+		if (inputs.currentKeyStates[SDL_SCANCODE_S] && !collidedBottom)
 		{
-			Textures["playerPaddle"]->translate(Vector2(0.0f, 7.0f));
-			Textures["opponentPaddle"]->translate(Vector2(0.0f, 7.0f));
+			texture->Textures["playerPaddleMiddle"]->translate(Vector2(0.0f, 6.0f));
+			texture->Textures["opponentPaddleMiddle"]->translate(Vector2(0.0f, 6.0f));
 		}
-
-		Textures["ball"]->translate(Vector2(5.0f, 2.0f));
-		if (SDL_HasIntersection(Textures["ball"]->getDestRect(), Textures["playerPaddle"]->getDestRect()) && !q)
+		if (inputs.currentKeyStates[SDL_SCANCODE_A] && !inputs.currentKeyStates[SDL_SCANCODE_D])
 		{
-			Textures["ball"]->speed = Textures["ball"]->speed * Vector2{-1.1f, 1.01f};
-			q = true;
-			w = e = r = false;
+			texture->Textures["playerPaddleMiddle"]->translate(Vector2(-6.0f, 0.0f));
 		}
-		if (SDL_HasIntersection(Textures["ball"]->getDestRect(), Textures["opponentPaddle"]->getDestRect()) && !w)
+		if (inputs.currentKeyStates[SDL_SCANCODE_D])
 		{
-			Textures["ball"]->speed = Textures["ball"]->speed * Vector2{ -1.1f, 1.01f };
-			w = true;
-			q = e = r = false;
-		}
-		if (SDL_HasIntersection(Textures["ball"]->getDestRect(), Textures["lowerBorder"]->getDestRect()) && !e)
-		{
-			Textures["ball"]->speed = Textures["ball"]->speed * Vector2{ 1.0f, -1.0f };
-			e = true;
-			r = false;
-
-		}
-		if (SDL_HasIntersection(Textures["ball"]->getDestRect(), Textures["upperBorder"]->getDestRect()) && !r)
-		{
-			Textures["ball"]->speed = Textures["ball"]->speed * Vector2{ 1.0f, -1.0f };
-
-			r = true;
-			e = false;
+			texture->Textures["playerPaddleMiddle"]->translate(Vector2(6.0f, 0.0f));
 		}
 
+		texture->Textures["ball"]->translate(Vector2(-7.0f, 0.0f));
+		hCollision->ballCollisionCheck();
 
 		hGraphics->clearBuffer();
 
-		Textures["playerPaddle"]->renderTexture(10, 50);
-		Textures["opponentPaddle"]->renderTexture(10, 50);
-		Textures["ball"]->renderTexture(19, 17);
+		texture->Textures["playerPaddleTop"]->renderTexture(10, 20);
+		texture->Textures["playerPaddleMiddle"]->renderTexture(10, 20);
+		texture->Textures["playerPaddleBottom"]->renderTexture(10, 20);
+		texture->Textures["opponentPaddleTop"]->renderTexture(10, 20);
+		texture->Textures["opponentPaddleMiddle"]->renderTexture(10, 20);
+		texture->Textures["opponentPaddleBottom"]->renderTexture(10, 20);
+		texture->Textures["ball"]->renderTexture(16, 14);
 		for (int i = 0; i < 27; i++)
 		{
-			SDL_Rect mid;
+			SDL_FRect mid;
 			mid.x = (hGraphics->getWindowWidth() / 2) - 1;
 			mid.y = i * 20;
 			mid.w = 2;
 			mid.h = 10;
-			SDL_RenderCopy(hGraphics->getRenderer(), Textures["middleLine"]->getTexture(), NULL, &mid);
+			SDL_RenderCopyF(hGraphics->getRenderer(), texture->Textures["middleLine"]->getTexture(), NULL, &mid);
 		}
-		Textures["upperBorder"]->renderTexture(hGraphics->getWindowWidth(), 6);
-		Textures["lowerBorder"]->renderTexture(hGraphics->getWindowWidth(), 6);
+		texture->Textures["topBoundary"]->renderTexture(hGraphics->getWindowWidth(), 6);
+		texture->Textures["bottomBoundary"]->renderTexture(hGraphics->getWindowWidth(), 6);
+		texture->Textures["leftBoundary"]->renderTexture(6, hGraphics->getWindowHeight());
+		texture->Textures["rightBoundary"]->renderTexture(6, hGraphics->getWindowHeight());
 
 		Text["avgFpsText"].renderText(hGraphics->getWindowWidth() - 50, hGraphics->getWindowHeight() - 15);
 		Text["fpsText"].renderText(hGraphics->getWindowWidth() - 22, hGraphics->getWindowHeight() - 15);
+		Text["playerPoints"].renderText(hGraphics->getWindowWidth() / 2 - 80, 30);
+		Text["opponentPoints"].renderText(hGraphics->getWindowWidth() / 2 + 55, 30);
+
 		hGraphics->render();
 
 		float frameTicks = timer.getDeltaTime();
@@ -139,6 +140,3 @@ void Game::run()
 		}
 	}
 }
-
-
-

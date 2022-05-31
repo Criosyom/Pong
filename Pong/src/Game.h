@@ -1,15 +1,13 @@
 #pragma once
 #include "Inputs.h"
-#include "Texture.h"
 #include "Timer.h"
 #include "Fonts.h"
+#include "Collision.h"
 #include <sstream>
-#include <math.h>
-#include <map>
+
 class Game
 {
 public:
-
 	Game();
 	~Game();
 
@@ -20,24 +18,21 @@ public:
 	void release();
 
 private:
-
-
 	SDL_Event hEvents;
 	Graphics* hGraphics;
+	Collision* hCollision;
 
-	std::map<std::string, Texture*> Textures;
 	std::map<std::string, Fonts> Text;
 
+	Texture* texture;
 	Inputs inputs;
-	std::stringstream stream;
+	std::stringstream fpsCount;
+	std::stringstream leftScore;
+	std::stringstream rightScore;
+
 
 	bool hQuit;
 
-	bool q, w, e, r;
-
-
-	const int FPS = 60;
+	const float FPS = 60.0f;
 	int countedFrames;
-
-
 };

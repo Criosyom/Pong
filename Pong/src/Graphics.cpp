@@ -30,7 +30,7 @@ void Graphics::init()
 
 	hWindow = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, hWindowWidth, hWindowHeight, SDL_WINDOW_SHOWN);
 	if (hWindow == NULL) { std::cout << "Unable to create window: " << SDL_GetError() << '\n'; }
-	hRenderer = SDL_CreateRenderer(hWindow, -1, SDL_RENDERER_PRESENTVSYNC);
+	hRenderer = SDL_CreateRenderer(hWindow, -1, SDL_RENDERER_ACCELERATED);
 	if (hRenderer == NULL) { std::cout << "Unable to create renderer: " << SDL_GetError() << '\n'; }
 
 	SDL_SetRenderDrawColor(hRenderer, 0, 0, 0, 0);
