@@ -29,10 +29,11 @@ private:
 	std::stringstream fpsCount;
 	std::stringstream leftScore;
 	std::stringstream rightScore;
-
+	SDL_FRect mid;
 
 	bool hQuit;
 
 	const float FPS = 60.0f;
 	int countedFrames;
+
 };

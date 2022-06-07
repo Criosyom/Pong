@@ -10,6 +10,11 @@
 #define PI 3.14159265359
 #define DEG_TO_RAD PI/180.0f
 
+struct Circle
+{
+	float x = 300, y = 250, r = 13;
+};
+
 class Texture : public Entity
 {
 public:
@@ -17,14 +22,15 @@ public:
 
 	SDL_Texture* loadTexture(const char* fileName);
 
-	void renderTexture(int dstW, int dstH);
+	void renderTexture(float dstW, float dstH);
 	void renderClippedTexture(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH);
 	
-
+	void addSize(float addSizeX = 0.0f, float addSizeY = 0.0f);
 
 	Graphics* getGraphics() { return hGraphics; }
 	SDL_Texture* getTexture() { return hTexture; }
 	SDL_FRect* getDestRect() { return &hDestRect; }	
+	Circle& getCircleCollider() { return hCircle; }
 
 	std::map<std::string, Texture*> Textures = std::map<std::string, Texture*>();
 
@@ -33,6 +39,8 @@ public:
 
 	const char* sameTextureStr = NULL;
 
+	
+
 private:
 
 	SDL_Surface* hSurface;
@@ -40,6 +48,7 @@ private:
 	Graphics* hGraphics;
 	Vector2 startingPos;
 	SDL_FRect hSrcRect, hDestRect;
+	Circle hCircle;
 
 	Texture* hParent;
 	

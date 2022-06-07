@@ -17,6 +17,53 @@ Collision* Collision::instance()
 	return hInstance;
 }
 
+double distanceSquared(float x1, float y1, float x2, float y2)
+{
+	float deltaX = x2 - x1;
+	float deltaY = y2 - y1;
+	return pow(deltaX, 2) + pow(deltaY, 2);
+}
+
+bool circleBoxCollision(Texture* circle, Texture* box)
+{
+	// This took over a week to figure out... BUT NOW IT WORKS WOOOOOOOOOOOOOOOO!!!!
+	int cX, cY;
+
+	if (circle->getPos().x < box->getPos().x - box->getDestRect()->w / 2)
+	{
+		cX = box->getPos().x - box->getDestRect()->w / 2;
+	}
+	else if (circle->getPos().x > box->getPos().x + (box->getDestRect()->w / 2))
+	{
+		cX = box->getPos().x + box->getDestRect()->w / 2;
+	}
+	else
+	{
+		cX = circle->getPos().x;
+	}
+	if (circle->getPos().y < box->getPos().y - box->getDestRect()->h / 2)
+	{
+		cY = box->getPos().y - (box->getDestRect()->h / 2);
+	}
+	else if (circle->getPos().y > box->getPos().y + box->getDestRect()->h / 2)
+	{
+		cY = box->getPos().y + (box->getDestRect()->h / 2);
+	}
+	else
+	{
+		cY = circle->getPos().y;
+	}
+
+	float dS = distanceSquared(circle->getPos().x, circle->getPos().y, cX, cY);
+	if (dS < pow(circle->getCircleCollider().r, 2) / 4)
+	{
+		return true;
+	}
+
+	std::cout << "Circle: { " << circle->getPos().x << ", " << circle->getPos().y << ", " << circle->getCircleCollider().r << " }	Closest point position: { " << cX << ", " << cY << " } " << "	Rec pos: { " << box->getPos().x << ", " << box->getPos().y << " }\n";
+	return false;
+}
+
 void Collision::ballCollisionCheck()
 {
 	// Chief, I'm like 99% sure there's a better way to do collision rather than doing a ton of if statements. But whatevs...
@@ -115,4 +162,10 @@ void Collision::ballCollisionCheck()
 			timer->resetInstance();
 		}
 	}
+
+	if (circleBoxCollision(texture->Textures["ball"], texture->Textures["playerPaddleMiddle"]))
+	{
+		std::cout << ".";
+	}
+
 }

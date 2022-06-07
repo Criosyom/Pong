@@ -33,7 +33,7 @@ void Graphics::init()
 	hRenderer = SDL_CreateRenderer(hWindow, -1, SDL_RENDERER_ACCELERATED);
 	if (hRenderer == NULL) { std::cout << "Unable to create renderer: " << SDL_GetError() << '\n'; }
 
-	SDL_SetRenderDrawColor(hRenderer, 0, 0, 0, 0);
+	
 
 }
 

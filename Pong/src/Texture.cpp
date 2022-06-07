@@ -2,6 +2,7 @@
 
 Texture* Texture::hInstance = NULL;
 
+
 Texture::Texture(Vector2 startingPos_, Texture* setParent, const char* identicalTexture)
 	: startingPos(startingPos_)
 {
@@ -9,6 +10,7 @@ Texture::Texture(Vector2 startingPos_, Texture* setParent, const char* identical
 	hPos.x = setParent == NULL ? startingPos.x : hParent->hPos.x;
 	hPos.y = setParent == NULL ? startingPos.y : hParent->hPos.y;
 	sameTextureStr = identicalTexture;
+
 
 	hGraphics = hGraphics->instance();
 }
@@ -41,15 +43,26 @@ SDL_Texture* Texture::loadTexture(const char* fileName)
 
 }
 
-void Texture::renderTexture(int dstW, int dstH)
+void Texture::renderTexture(float dstW, float dstH)
 {
-	hDestRect.x = hParent == NULL ? hPos.x : hParent->hPos.x + startingPos.x;
-	hDestRect.y = hParent == NULL ? hPos.y : hParent->hPos.y + startingPos.y;
-	hDestRect.w = dstW;
-	hDestRect.h = dstH;
+	sizeX = dstW;
+	sizeY = dstH;
+	hDestRect.x = hParent == NULL ? hPos.x - dstW / 2 : hParent->hPos.x + (startingPos.x - dstW / 2);
+	hDestRect.y = hParent == NULL ? hPos.y - dstH / 2 : hParent->hPos.y + (startingPos.y - dstH / 2);
+	hDestRect.w = sizeX;
+	hDestRect.h = sizeY;
+	entityOrigin = hPos;
+
 	SDL_RenderCopyExF(hGraphics->getRenderer(), hTexture, NULL, &hDestRect, angle, NULL, SDL_FLIP_NONE);
-						
 }
+
+
+void Texture::addSize(float addSizeX, float addSizeY)
+{
+	sizeX += addSizeX;
+	sizeY += addSizeY;
+}
+
 //
 //void Texture::renderClippedTexture(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH)
 //{
