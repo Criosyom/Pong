@@ -1,9 +1,6 @@
 #pragma once
 #include "Inputs.h"
-#include "Timer.h"
-#include "Fonts.h"
-#include "Collision.h"
-#include <sstream>
+#include "AI.h"
 
 class Game
 {
@@ -13,27 +10,30 @@ public:
 
 	static Game* game;
 	static Game* instance();
+	void titleScreen();
+	void pause();
 	void loadContent();
 	void run();
 	void release();
 
 private:
-	SDL_Event hEvents;
 	Graphics* hGraphics;
+	SDL_Event hEvents;
 	Collision* hCollision;
-
-	std::map<std::string, Fonts> Text;
-
+	AI* hAI; // hello :>
 	Texture* texture;
 	Inputs inputs;
+	Timer timer;
+
 	std::stringstream fpsCount;
-	std::stringstream leftScore;
-	std::stringstream rightScore;
 	SDL_FRect mid;
+	Mix_Chunk* countDown;
 
-	bool hQuit;
-
-	const float FPS = 60.0f;
+	bool hQuitTitle, hQuitGame;
+	bool singlePlayer;
+	bool soundPlayed3 = false, soundPlayed2 = false, soundPlayed1 = false;
+	float FPS = 60.0f;
+	float frameTicks;
 	int countedFrames;
 
 };

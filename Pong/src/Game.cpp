@@ -1,23 +1,21 @@
 #include "Game.h"
 
+uint32_t TotalAllocated = 0;
+uint32_t TotalFreed = 0;
+
+void* operator new(size_t size)
+{
+	TotalAllocated += size;
+	return malloc(size);
+}
+
+void operator delete(void* memory, size_t size)
+{
+	TotalFreed += size;
+	free(memory);
+}
+
 Game* Game::game = NULL;
-
-
-Game::Game()
-{
-	hQuit = false;
-	hGraphics = hGraphics->instance();
-	hCollision = Collision::instance();
-	texture = Texture::instance();
-	SDL_Init(SDL_INIT_EVERYTHING);
-}
-
-Game::~Game()
-{
-	delete game;
-	game = NULL;
-}
-
 
 Game* Game::instance()
 {
@@ -28,20 +26,76 @@ Game* Game::instance()
 	return game;
 }
 
+Game::Game()
+{
+	SDL_Init(SDL_INIT_EVERYTHING);
+	hGraphics = hGraphics->instance();
+	hQuitTitle = hQuitGame = false;
+	texture = Texture::instance();
+	hAI = AI::instance();
+	hCollision = hCollision->instance();
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+}
+
+Game::~Game()
+{
+	delete game;
+	game = NULL;
+	SDL_DestroyWindow(hGraphics->getWindow());
+	SDL_DestroyRenderer(hGraphics->getRenderer());
+	TTF_Quit();
+	IMG_Quit();
+	SDL_Quit();
+}
+
+void Game::titleScreen()
+{
+	hCollision->selectSound = Mix_LoadWAV("assets/select2.wav");
+	hCollision->Text["PONG"].loadText("assets/Hakugyokurou.ttf", "PONG", { 255, 255, 255 }, 125.0f);
+	while (!hQuitTitle)
+	{
+		timer.startTime();
+		hGraphics->clearBuffer();
+		SDL_PollEvent(&hEvents);
+		if (hEvents.type == SDL_QUIT) { hQuitTitle = true; }
+		hCollision->Text["Polyvinyl Chloride"].loadText("assets/Hakugyokurou.ttf", "Player VS Computer", inputs.PVCColor, 30.0f);
+		hCollision->Text["PVP"].loadText("assets/Hakugyokurou.ttf", "Player VS Player", inputs.PVPColor, 30.0f);
+		hCollision->Text["SPEED"].loadText("assets/Hakugyokurou.ttf", "SUPER SPEED", inputs.SPEEDColor, 30.0f);
+		hCollision->Text["ExitGame"].loadText("assets/Hakugyokurou.ttf", "Exit game", inputs.ExitColor, 30.0f);
+		switch (inputs.mouseEvents(&hEvents))
+		{
+		case 1: hQuitTitle = true; singlePlayer = true; break;
+		case 2: hQuitTitle = true; singlePlayer = false; break;
+		case 3: hQuitTitle = true; singlePlayer = true; FPS = 600.0f; break;
+		case 4: hQuitTitle = true; hQuitGame = true; break;
+		}		
+		hCollision->Text["PONG"].renderText(hGraphics->getWindowWidth() / 2, 100);
+		hCollision->Text["Polyvinyl Chloride"].renderText(hGraphics->getWindowWidth() / 2, 250);
+		hCollision->Text["PVP"].renderText(hGraphics->getWindowWidth() / 2, 310);
+		hCollision->Text["SPEED"].renderText(hGraphics->getWindowWidth() / 2, 370);
+		hCollision->Text["ExitGame"].renderText(hGraphics->getWindowWidth() / 2, 430);
+
+		hGraphics->render();		
+		
+		frameTicks = timer.getDeltaTime();
+		++countedFrames;
+		if (frameTicks < (1000.0f / FPS))
+		{
+			SDL_Delay((1000.0f / FPS) - frameTicks);
+		}
+	}
+}
+
 void Game::loadContent()
 {
-
-	hGraphics->init();
-	if (TTF_Init() == -1) { std::cout << "SDL_ttf could not initialize! SDL_ttf Error: " << TTF_GetError() << '\n'; }
 	texture->Textures["playerPaddleMiddle"] = new Texture(Vector2(40, hGraphics->getWindowHeight() / 2));
-	texture->Textures["playerPaddleTop"] = new Texture(Vector2(0, -20), texture->Textures["playerPaddleMiddle"], "pads");
-	texture->Textures["playerPaddleBottom"] = new Texture(Vector2(0, 20), texture->Textures["playerPaddleMiddle"], "pads");
+	texture->Textures["playerPaddleTop"] = new Texture(Vector2(0, -17), texture->Textures["playerPaddleMiddle"], "pads");
+	texture->Textures["playerPaddleBottom"] = new Texture(Vector2(0, 17), texture->Textures["playerPaddleMiddle"], "pads");
 	texture->Textures["opponentPaddleMiddle"] = new Texture(Vector2(hGraphics->getWindowWidth() - 40, hGraphics->getWindowHeight() / 2), NULL, "pads");
-	texture->Textures["opponentPaddleTop"] = new Texture(Vector2(0, -20), texture->Textures["opponentPaddleMiddle"], "pads");
-	texture->Textures["opponentPaddleBottom"] = new Texture(Vector2(0, 20), texture->Textures["opponentPaddleMiddle"], "pads");
+	texture->Textures["opponentPaddleTop"] = new Texture(Vector2(0, -17), texture->Textures["opponentPaddleMiddle"], "pads");
+	texture->Textures["opponentPaddleBottom"] = new Texture(Vector2(0, 17), texture->Textures["opponentPaddleMiddle"], "pads");
 	texture->Textures["middleLine"] = new Texture(NULL, NULL, "pads");
 	texture->Textures["ball"] = new Texture(Vector2(texture->getCircleCollider().x, texture->getCircleCollider().y));
-	texture->Textures["test"] = new Texture();
 	texture->Textures["topBoundary"] = new Texture(Vector2(hGraphics->getWindowWidth() / 2, -3.0f), NULL, "pads");
 	texture->Textures["bottomBoundary"] = new Texture(Vector2(hGraphics->getWindowWidth() / 2, hGraphics->getWindowHeight() + 3.0f), NULL, "pads");
 	texture->Textures["leftBoundary"] = new Texture(Vector2(-3.0f, hGraphics->getWindowHeight() / 2), NULL, "pads");
@@ -49,8 +103,10 @@ void Game::loadContent()
 
 	texture->Textures["playerPaddleMiddle"]->loadTexture("assets/red.png");
 	texture->Textures["ball"]->loadTexture("assets/ballWhite.png");
-	//texture->Textures["test"]->loadTexture("assets/ball.png");
-
+	hCollision->paddleSound = Mix_LoadWAV("assets/pongCollidePaddle.wav");
+	hCollision->borderSound = Mix_LoadWAV("assets/borderCollision.wav");
+	hCollision->scoreSound = Mix_LoadWAV("assets/scored.wav");
+	countDown = Mix_LoadWAV("assets/select.wav");
 	for (std::pair<std::string, Texture*> t : texture->Textures)
 	{
 		if (t.second->sameTextureStr == "pads")
@@ -58,70 +114,63 @@ void Game::loadContent()
 			t.second->loadTexture("assets/pads.png");
 		}
 	}
-	Text["fpsText"].loadText("assets/Hakugyokurou.ttf", "fps", { 255, 255, 255 }, 14.0f);
+	hCollision->Text["fpsText"].loadText("assets/Hakugyokurou.ttf", "fps", { 255, 255, 255 }, 14.0f);
 }
 
 void Game::run()
 {
-	Timer timer;
-	while (!hQuit)
+	while (!hQuitGame)
 	{
-		//SDL_FRect rectToDraw = { texture->Textures["ball"]->getPos().x, texture->Textures["ball"]->getPos().y,100,100 };
 		timer.startTime();
-		SDL_PollEvent(&hEvents);
+		timer.updateInstance();
+		hGraphics->clearBuffer();
 
-		if (hEvents.type == SDL_QUIT) { hQuit = true; }
+		while (SDL_PollEvent(&hEvents))
+		{
+			if (hEvents.type == SDL_QUIT) { hQuitGame = true; }
+		}
+
 		float avgFps = countedFrames / (timer.getStartTime() / 1000.0f);
 		fpsCount.str("");
 		fpsCount << roundf(avgFps * 10) / 10;
-		leftScore.str("");
-		leftScore << hCollision->leftPoints;
-		rightScore.str("");
-		rightScore << hCollision->rightPoints;
-		Text["avgFpsText"].loadText("assets/Hakugyokurou.ttf", fpsCount.str().c_str(), {255, 255, 255}, 14.0f);
-		Text["playerPoints"].loadText("assets/bit5x3.ttf", leftScore.str().c_str(), {255, 255, 255}, 80.0f);
-		Text["opponentPoints"].loadText("assets/bit5x3.ttf", rightScore.str().c_str(), {255, 255, 255}, 80.0f);
+		hCollision->Text["avgFpsText"].loadText("assets/Hakugyokurou.ttf", fpsCount.str().c_str(), {255, 255, 255}, 14.0f);
+		inputs.keyboardEvents(singlePlayer);
+		
 
-		bool collidedTop = SDL_HasIntersectionF(texture->Textures["playerPaddleTop"]->getDestRect(), texture->Textures["topBoundary"]->getDestRect());
-		bool collidedBottom = SDL_HasIntersectionF(texture->Textures["playerPaddleBottom"]->getDestRect(), texture->Textures["bottomBoundary"]->getDestRect());
-		if (inputs.currentKeyStates[SDL_SCANCODE_W] && !inputs.currentKeyStates[SDL_SCANCODE_S] && !collidedTop)
-		{
-			texture->Textures["playerPaddleMiddle"]->translate(Vector2(0.0f, -6.0f));
-			texture->Textures["opponentPaddleMiddle"]->translate(Vector2(0.0f, -6.0f));
-		}
-		if (inputs.currentKeyStates[SDL_SCANCODE_S] && !collidedBottom)
-		{
-			texture->Textures["playerPaddleMiddle"]->translate(Vector2(0.0f, 6.0f));
-			texture->Textures["opponentPaddleMiddle"]->translate(Vector2(0.0f, 6.0f));
-		}
-		if (inputs.currentKeyStates[SDL_SCANCODE_A] && !inputs.currentKeyStates[SDL_SCANCODE_D])
-		{
-			texture->Textures["playerPaddleMiddle"]->translate(Vector2(-6.0f, 0.0f));
-		}
-		if (inputs.currentKeyStates[SDL_SCANCODE_D])
-		{
-			texture->Textures["playerPaddleMiddle"]->translate(Vector2(6.0f, 0.0f));
-		}
-
-		texture->Textures["ball"]->translate(Vector2(-7.0f, 0.0f));
+		hAI->aiBehavior(singlePlayer);
 		hCollision->ballCollisionCheck();
-		//texture->Textures["ball"]->addSize(5, 0);
-		SDL_SetRenderDrawColor(hGraphics->getRenderer(), 0, 0, 0, 0);
-		hGraphics->clearBuffer();
-		SDL_SetRenderDrawColor(hGraphics->getRenderer(), 255, 255, 255, 0);
-		texture->Textures["playerPaddleTop"]->renderTexture(10, 20);
-		texture->Textures["playerPaddleMiddle"]->renderTexture(10, 20);
-		texture->Textures["playerPaddleBottom"]->renderTexture(10, 20);
-		texture->Textures["opponentPaddleTop"]->renderTexture(10, 20);
-		texture->Textures["opponentPaddleMiddle"]->renderTexture(10, 20);
-		texture->Textures["opponentPaddleBottom"]->renderTexture(10, 20);
-		texture->Textures["ball"]->renderTexture(texture->getCircleCollider().r, texture->getCircleCollider().r);
-		texture->Textures["test"]->setPos(texture->Textures["ball"]->getEntityOrigin());
-		texture->Textures["test"]->renderTexture(100, 100);
-		/*if (SDL_HasIntersectionF(texture->Textures["playerPaddleBottom"]->getDestRect(), texture->Textures["ball"]->getDestRect()))
+
+		if (timer.getInstanceTime() <= 35)
 		{
-			std::cout << ".";
-		}*/
+			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", "3", { 255, 255, 255 }, 50.0f);
+			if (!soundPlayed3) { Mix_PlayChannel(-1, countDown, 0); soundPlayed3 = true; }
+		}
+		if (timer.getInstanceTime() <= 70 && timer.getInstanceTime() > 35)
+		{
+			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", "2", { 255, 255, 255 }, 50.0f);
+			if (!soundPlayed2) { Mix_PlayChannel(-1, countDown, 0); soundPlayed2 = true; }
+		}
+		if (timer.getInstanceTime() <= 105 && timer.getInstanceTime() > 70)
+		{
+			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", "1", { 255, 255, 255 }, 50.0f);
+			if (!soundPlayed1) { Mix_PlayChannel(-1, countDown, 0); soundPlayed1 = true; }
+		}
+		if (timer.getInstanceTime() > 105)
+		{
+			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", " ", { 255, 255, 255 }, 50.0f);
+			texture->Textures["ball"]->translate(Vector2(-7.0f, 0.0f));
+		}
+
+		texture->Textures["playerPaddleTop"]->renderTexture(9, 21);
+		texture->Textures["playerPaddleMiddle"]->renderTexture(9, 13);
+		texture->Textures["playerPaddleBottom"]->renderTexture(9, 21);
+		texture->Textures["opponentPaddleTop"]->renderTexture(9, 21);
+		texture->Textures["opponentPaddleMiddle"]->renderTexture(9, 13);
+		texture->Textures["opponentPaddleBottom"]->renderTexture(9, 21);
+		texture->Textures["ball"]->renderTexture(texture->getCircleCollider().r, texture->getCircleCollider().r);
+	/*	texture->Textures["test"]->setPos(texture->Textures["ball"]->getEntityOrigin() - texture->Textures["test"]->getDestRect()->w / 2);
+		texture->Textures["test"]->rotate(texture->Textures["ball"]->angle);
+		texture->Textures["test"]->renderTexture(7 * texture->Textures["ball"]->speed.x + 70, 10, texture->Textures["test"]->getDestRect()->w, texture->Textures["test"]->getDestRect()->h / 2);*/
 		for (int i = 0; i < 27; i++)
 		{
 			mid.x = (hGraphics->getWindowWidth() / 2) - 1;
@@ -135,16 +184,18 @@ void Game::run()
 		texture->Textures["leftBoundary"]->renderTexture(6, hGraphics->getWindowHeight());
 		texture->Textures["rightBoundary"]->renderTexture(6, hGraphics->getWindowHeight());
 
-		Text["avgFpsText"].renderText(hGraphics->getWindowWidth() - 50, hGraphics->getWindowHeight() - 15);
-		Text["fpsText"].renderText(hGraphics->getWindowWidth() - 22, hGraphics->getWindowHeight() - 15);
-		Text["playerPoints"].renderText(hGraphics->getWindowWidth() / 2 - 80, 30);
-		Text["opponentPoints"].renderText(hGraphics->getWindowWidth() / 2 + 55, 30);
+		hCollision->Text["avgFpsText"].renderText(hGraphics->getWindowWidth() - 40, hGraphics->getWindowHeight() - 10);
+		hCollision->Text["fpsText"].renderText(hGraphics->getWindowWidth() - 12, hGraphics->getWindowHeight() - 10);
+		hCollision->Text["playerPoints"].renderText(hGraphics->getWindowWidth() / 2 - 74, 70);
+		hCollision->Text["opponentPoints"].renderText(hGraphics->getWindowWidth() / 2 + 86, 70);
+		hCollision->Text["countDown"].renderText(hGraphics->getWindowWidth() / 2, hGraphics->getWindowHeight() / 2);
 
-		//SDL_RenderDrawRectF(hGraphics->getRenderer(), &rectToDraw);
+		hAI->aiBehavior(singlePlayer);
 
 		hGraphics->render();
 
-		float frameTicks = timer.getDeltaTime();
+		//std::cout << "Total memory usage: " << TotalAllocated - TotalFreed << "\n";
+		frameTicks = timer.getDeltaTime();
 		++countedFrames;
 		if (frameTicks < (1000.0f / FPS))
 		{

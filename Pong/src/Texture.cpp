@@ -19,6 +19,9 @@ Texture::~Texture()
 {
 	delete hGraphics;
 	hGraphics = NULL;
+	delete hInstance;
+	hInstance = NULL;
+	SDL_DestroyTexture(hTexture);
 }
 
 Texture* Texture::instance()
@@ -36,14 +39,14 @@ SDL_Texture* Texture::loadTexture(const char* fileName)
 	if (hSurface == NULL) { std::cout << "Cannot load surface\n"; }
 	hTexture = SDL_CreateTextureFromSurface(hGraphics->getRenderer(), hSurface);
 	if (hTexture == NULL) { std::cout << "Cannot load texture: " << SDL_GetError() << '\n'; }
-
+	
 	SDL_FreeSurface(hSurface);
 
 	return hTexture;
 
 }
 
-void Texture::renderTexture(float dstW, float dstH)
+void Texture::renderTexture(float dstW, float dstH, float angleX, float angleY)
 {
 	sizeX = dstW;
 	sizeY = dstH;
@@ -52,8 +55,10 @@ void Texture::renderTexture(float dstW, float dstH)
 	hDestRect.w = sizeX;
 	hDestRect.h = sizeY;
 	entityOrigin = hPos;
+	if (angleX == NULL && angleY == NULL) { anglePoint = { hDestRect.w / 2, hDestRect.h / 2 }; }
+	else { anglePoint = { angleX, angleY }; }
 
-	SDL_RenderCopyExF(hGraphics->getRenderer(), hTexture, NULL, &hDestRect, angle, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyExF(hGraphics->getRenderer(), hTexture, NULL, &hDestRect, angle, &anglePoint, SDL_FLIP_NONE);
 }
 
 

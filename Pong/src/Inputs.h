@@ -1,13 +1,25 @@
 #pragma once
-#include "SDL.h"
+#include "Collision.h"
 
-class Inputs
+struct Inputs
 {
-public:
 	const Uint8* currentKeyStates;
+	SDL_Color PVCColor = { 255, 255, 255 };
+	SDL_Color PVPColor = { 255, 255, 255 };
+	SDL_Color SPEEDColor = { 255, 255, 255 };
+	SDL_Color ExitColor = { 255, 255, 255 };
 
-	Inputs() { currentKeyStates = SDL_GetKeyboardState(NULL); }
-	~Inputs() {}
+	Inputs();
+	~Inputs();
+	int mouseEvents(SDL_Event* e);
+	void keyboardEvents(bool isSingle);
+	int x, y;	
+
+	Collision* hCollision;
 
 private:
+	Texture* texture;
+	bool selected = false;
+
 };
+

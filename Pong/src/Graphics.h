@@ -15,6 +15,7 @@ public:
 	static Graphics* instance();
 
 	SDL_Renderer* getRenderer() { return hRenderer; }
+	SDL_Window* getWindow() { return hWindow; }
 	const int getWindowWidth() { return hWindowWidth; }
 	const int getWindowHeight() { return hWindowHeight; }
 

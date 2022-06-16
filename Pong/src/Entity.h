@@ -23,7 +23,6 @@ public:
 
 	~Entity();
 	double angle = 0;
-
 protected:
 	Vector2 hPos;
 	float sizeX = 0.0f, sizeY = 0.0f;

@@ -151,16 +151,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AI.cpp" />
     <ClCompile Include="src\Collision.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\Fonts.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
+    <ClCompile Include="src\Inputs.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AI.h" />
     <ClInclude Include="src\Collision.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\Fonts.h" />

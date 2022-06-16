@@ -12,7 +12,7 @@
 
 struct Circle
 {
-	float x = 300, y = 250, r = 13;
+	float x = 300, y = 260, r = 11;
 };
 
 class Texture : public Entity
@@ -21,8 +21,7 @@ public:
 	static Texture* instance();
 
 	SDL_Texture* loadTexture(const char* fileName);
-
-	void renderTexture(float dstW, float dstH);
+	void renderTexture(float dstW, float dstH, float angleX = NULL, float angleY = NULL);
 	void renderClippedTexture(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH);
 	
 	void addSize(float addSizeX = 0.0f, float addSizeY = 0.0f);
@@ -50,6 +49,7 @@ private:
 	SDL_FRect hSrcRect, hDestRect;
 	Circle hCircle;
 
+	SDL_FPoint anglePoint;
 	Texture* hParent;
 	
 	static Texture* hInstance;
