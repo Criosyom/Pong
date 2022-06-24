@@ -11,12 +11,12 @@ Fonts::~Fonts()
 	TTF_CloseFont(text);
 }
 
-void Fonts::loadText(const char* font, const char* displayText, SDL_Color textColor, float textSize)
+void Fonts::loadText(const char* font, const char* displayText, SDL_Color textColor, float textSize, Uint32 wrapSize)
 {	
 	if (TTF_Init() == -1) { std::cout << "SDL_ttf could not initialize! SDL_ttf Error: " << TTF_GetError() << '\n'; }
 	text = TTF_OpenFont(font, textSize);
 	if (text == NULL) { std::cout << "Cannot make text init: " << TTF_GetError() << '\n'; }
-	surface = TTF_RenderText_Solid(text, displayText, textColor);
+	surface = TTF_RenderText_Solid_Wrapped(text, displayText, textColor, wrapSize = NULL);
 	if (surface == NULL) { std::cout << "Cannot make text surface: " << SDL_GetError() << '\n'; }
 	textTexture = SDL_CreateTextureFromSurface(graphics->getRenderer(), surface);
 	if (textTexture == NULL) { std::cout << "Cannot make text texture: " << TTF_GetError() << '\n'; }
@@ -27,10 +27,10 @@ void Fonts::loadText(const char* font, const char* displayText, SDL_Color textCo
 
 }
 
-void Fonts::renderText(int xPos, int yPos)
+void Fonts::renderText(int xPos, int yPos, bool fromTopLeft)
 {
-	dst.x = xPos - hWidth / 2;
-	dst.y = yPos - hHeight / 2;
+	dst.x = fromTopLeft ? xPos : xPos - hWidth / 2;
+	dst.y = fromTopLeft ? yPos : yPos - hHeight / 2;
 	dst.w = hWidth;
 	dst.h = hHeight;
 	SDL_RenderCopy(graphics->getRenderer(), textTexture, NULL, &dst);

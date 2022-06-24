@@ -73,7 +73,47 @@ bool circleBoxCollision(Texture* circle, Texture* box)
 	return false;
 }
 
-void Collision::ballCollisionCheck()
+void Collision::titleCollisionCheck()
+{
+	std::srand(std::time(NULL));
+	int randomLeft = -60 + (rand() % 120);
+	int randomRight = 120 + (rand() % 120);
+	if (SDL_HasIntersectionF(texture->Textures["titleBall"]->getDestRect(), texture->Textures["borderLeft"]->getDestRect()) && !titleLeft)
+	{
+		texture->Textures["titleBall"]->rotate(randomLeft);
+		titleLeft = true;
+		titleRight = titleTop = titleBottom = false;
+	}
+	if (SDL_HasIntersectionF(texture->Textures["titleBall"]->getDestRect(), texture->Textures["borderRight"]->getDestRect()) && !titleRight)
+	{
+		texture->Textures["titleBall"]->rotate(randomRight);
+		titleRight = true;
+		titleLeft = titleTop = titleBottom = false;
+	}
+	if (SDL_HasIntersectionF(texture->Textures["titleBall"]->getDestRect(), texture->Textures["borderTop"]->getDestRect()) && !titleTop)
+	{
+		texture->Textures["titleBall"]->speed = texture->Textures["titleBall"]->speed * Vector2{ 1.0f, -1.0f };
+		titleTop = true;
+		titleRight = titleLeft = titleBottom = false;
+	}
+	if (SDL_HasIntersectionF(texture->Textures["titleBall"]->getDestRect(), texture->Textures["borderBottom"]->getDestRect()) && !titleBottom)
+	{
+		texture->Textures["titleBall"]->speed = texture->Textures["titleBall"]->speed * Vector2{ 1.0f, -1.0f };
+		titleBottom = true;
+		titleRight = titleTop = titleLeft = false;
+	}
+
+	if (texture->Textures["titleBall"]->getPos().x > texture->Textures["borderRight"]->getPos().x 
+		|| texture->Textures["titleBall"]->getPos().x < texture->Textures["borderLeft"]->getPos().x
+		|| texture->Textures["titleBall"]->getPos().y < texture->Textures["borderTop"]->getPos().y
+		|| texture->Textures["titleBall"]->getPos().y > texture->Textures["borderBottom"]->getPos().y)
+	{
+		texture->Textures["titleBall"]->setPos(Vector2(graphics->getWindowWidth() / 2, graphics->getWindowHeight() / 2));
+		titleBottom = titleRight = titleTop = titleLeft = false;
+	}
+}
+
+void Collision::ballCollisionCheck(bool isGamePaused)
 {
 	// Chief, I'm like 99% sure there's a better way to do collision rather than doing a ton of if statements. But whatevs...
 
@@ -81,7 +121,7 @@ void Collision::ballCollisionCheck()
 	int randomTop = 130 + (rand() % 20);
 	int randomMiddle = 160 + (rand() % 40);
 	int randomBottom = 210 + (rand() % 20);
-
+	int randomSpawn = 75 + (rand() % 375);
 	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["playerPaddleTop"]->getDestRect()) && !bouncedPlayer)
 	{
 		texture->Textures["ball"]->speed = texture->Textures["ball"]->speed * Vector2{ 1.05f, 1.05f };
@@ -132,26 +172,33 @@ void Collision::ballCollisionCheck()
 		bouncedPlayer = bouncedBottom = bouncedTop = false;
 	}
 
-	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["bottomBoundary"]->getDestRect()) && !bouncedBottom)
-	{
-		texture->Textures["ball"]->speed = texture->Textures["ball"]->speed * Vector2{ 1.0f, -1.0f };
-		Mix_PlayChannel(-1, borderSound, 0);
-		bouncedBottom = true;
-		bouncedTop = false;
-	}
 	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["topBoundary"]->getDestRect()) && !bouncedTop)
 	{
 		texture->Textures["ball"]->speed = texture->Textures["ball"]->speed * Vector2{ 1.0f, -1.0f };
 		Mix_PlayChannel(-1, borderSound, 0);
 		bouncedTop = true;
-		bouncedBottom = false;
+		bouncedBottom = bouncedBottomCheck = false;
 	}
-
+	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["topBoundaryCheck"]->getDestRect()) && !bouncedTopCheck) 
+	{
+		bouncedTop = false; bouncedTopCheck = true;
+	}
+	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["bottomBoundary"]->getDestRect()) && !bouncedBottom)
+	{
+		texture->Textures["ball"]->speed = texture->Textures["ball"]->speed * Vector2{ 1.0f, -1.0f };
+		Mix_PlayChannel(-1, borderSound, 0);
+		bouncedBottom = true;
+		bouncedTop = bouncedTopCheck = false;
+	}
+	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["bottomBoundaryCheck"]->getDestRect()) && !bouncedBottomCheck)
+	{
+		bouncedBottom = false; bouncedBottomCheck = true;
+	}
 	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["leftBoundary"]->getDestRect()))
 	{
 		touchedLeft = true;
 	}
-	if (touchedLeft)
+	if (touchedLeft && !isGamePaused)
 	{
 		timer->updateInstance();
 		if (timer->getInstanceTime() < 2) 
@@ -159,24 +206,25 @@ void Collision::ballCollisionCheck()
 			rightPoints++; 
 			Mix_PlayChannel(-1, scoreSound, 0);
 			scored = true;
+			SDL_DestroyTexture(Text["opponentPoints"].textTexture);
 			rightScore.str("");
 			rightScore << rightPoints;
 			Text["opponentPoints"].loadText("assets/bit5x3.ttf", rightScore.str().c_str(), { 255, 255, 255 }, 100.0f);
 		}
 		if (timer->getInstanceTime() > 100)
 		{
-			texture->Textures["ball"]->setPos(Vector2(graphics->getWindowWidth() / 2 + 58, 200));
+			texture->Textures["ball"]->setPos(Vector2(graphics->getWindowWidth() / 2 + 70, randomSpawn));
 			touchedLeft = bouncedPlayer = bouncedOpponent = bouncedBottom = bouncedTop = false;
-			texture->Textures["ball"]->speed = Vector2(1.0f, 1.0f);
-			timer->resetInstance();
-			scored = false;
+			texture->Textures["ball"]->speed = Vector2(1.0f, 1.0f); 
+			timer->resetInstance(); scored = false;
 		}
 	}
 	if (SDL_HasIntersectionF(texture->Textures["ball"]->getDestRect(), texture->Textures["rightBoundary"]->getDestRect()))
 	{
+
 		touchedRight = true;
 	}
-	if (touchedRight)
+	if (touchedRight && !isGamePaused)
 	{
 		timer->updateInstance();
 		if (timer->getInstanceTime() < 2) 
@@ -184,25 +232,17 @@ void Collision::ballCollisionCheck()
 			leftPoints++; 
 			Mix_PlayChannel(-1, scoreSound, 0); 
 			scored = true;
+			SDL_DestroyTexture(Text["playerPoints"].textTexture);
 			leftScore.str("");
 			leftScore << leftPoints;
 			Text["playerPoints"].loadText("assets/bit5x3.ttf", leftScore.str().c_str(), { 255, 255, 255 }, 100.0f);
 		}
 		if (timer->getInstanceTime() > 100)
 		{
-			texture->Textures["ball"]->setPos(Vector2(graphics->getWindowWidth() / 2 - 58, 200));
+			texture->Textures["ball"]->setPos(Vector2(graphics->getWindowWidth() / 2 - 70, randomSpawn));
 			touchedRight = bouncedPlayer = bouncedOpponent = bouncedBottom = bouncedTop = false;
 			texture->Textures["ball"]->speed = Vector2(1.0f, 1.0f);
-			timer->resetInstance();
-			scored = false;
+			timer->resetInstance();	scored = false;
 		}
 	}
-
-	if (circleBoxCollision(texture->Textures["ball"], texture->Textures["playerPaddleMiddle"]))
-	{
-		std::cout << ".";
-	}
-
-
-	
 }

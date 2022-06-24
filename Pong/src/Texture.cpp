@@ -2,7 +2,6 @@
 
 Texture* Texture::hInstance = NULL;
 
-
 Texture::Texture(Vector2 startingPos_, Texture* setParent, const char* identicalTexture)
 	: startingPos(startingPos_)
 {
@@ -10,7 +9,6 @@ Texture::Texture(Vector2 startingPos_, Texture* setParent, const char* identical
 	hPos.x = setParent == NULL ? startingPos.x : hParent->hPos.x;
 	hPos.y = setParent == NULL ? startingPos.y : hParent->hPos.y;
 	sameTextureStr = identicalTexture;
-
 
 	hGraphics = hGraphics->instance();
 }
@@ -35,15 +33,14 @@ Texture* Texture::instance()
 
 SDL_Texture* Texture::loadTexture(const char* fileName)
 {
+	file = fileName;
 	hSurface = IMG_Load(fileName);
 	if (hSurface == NULL) { std::cout << "Cannot load surface\n"; }
 	hTexture = SDL_CreateTextureFromSurface(hGraphics->getRenderer(), hSurface);
 	if (hTexture == NULL) { std::cout << "Cannot load texture: " << SDL_GetError() << '\n'; }
-	
 	SDL_FreeSurface(hSurface);
 
 	return hTexture;
-
 }
 
 void Texture::renderTexture(float dstW, float dstH, float angleX, float angleY)
@@ -57,28 +54,11 @@ void Texture::renderTexture(float dstW, float dstH, float angleX, float angleY)
 	entityOrigin = hPos;
 	if (angleX == NULL && angleY == NULL) { anglePoint = { hDestRect.w / 2, hDestRect.h / 2 }; }
 	else { anglePoint = { angleX, angleY }; }
-
 	SDL_RenderCopyExF(hGraphics->getRenderer(), hTexture, NULL, &hDestRect, angle, &anglePoint, SDL_FLIP_NONE);
 }
-
 
 void Texture::addSize(float addSizeX, float addSizeY)
 {
 	sizeX += addSizeX;
 	sizeY += addSizeY;
 }
-
-//
-//void Texture::renderClippedTexture(int srcX, int srcY, int srcW, int srcH, int dstX, int dstY, int dstW, int dstH)
-//{
-//	hSrcRect.x = srcX;
-//	hSrcRect.y = srcY;
-//	hSrcRect.w = srcW;
-//	hSrcRect.h = srcH;
-//	hDestRect.x = hPos.x;
-//	hDestRect.y = hPos.y;
-//	hDestRect.w = dstW;
-//	hDestRect.h = dstH;
-//	SDL_RenderCopyF(hGraphics->getRenderer(), hTexture, &hSrcRect, &hDestRect);
-//
-//}

@@ -11,15 +11,14 @@ class Fonts
 private:
 	TTF_Font* text;
 	SDL_Surface* surface;
-	SDL_Texture* textTexture;
 	Graphics* graphics;
 
 public:
 	Fonts();
 	~Fonts();
-	void loadText(const char* font, const char* displayText, SDL_Color textColor, float textSize);
-	void renderText(int posX, int posY);
+	void loadText(const char* font, const char* displayText, SDL_Color textColor, float textSize, Uint32 wrapSize = NULL);
+	void renderText(int posX, int posY, bool fromTopLeft = false);
 	int hWidth, hHeight;
 	SDL_Rect dst;
-
+	SDL_Texture* textTexture;
 };

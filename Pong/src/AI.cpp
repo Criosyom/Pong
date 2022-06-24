@@ -22,9 +22,10 @@ AI* AI::instance()
 	return hInstance;
 }
 
-void AI::aiBehavior(bool isSingle)
+void AI::aiBehavior(bool isSingle, bool isGamePaused)
 {
-	if (isSingle)
+	texture->Textures["opponentPaddleMiddle"]->moving = false;
+	if (isSingle && !isGamePaused)
 	{
 		if (texture->Textures["opponentPaddleMiddle"]->getPos().y > texture->Textures["ball"]->getPos().y
 			&& !SDL_HasIntersectionF(texture->Textures["opponentPaddleTop"]->getDestRect(), texture->Textures["topBoundary"]->getDestRect())

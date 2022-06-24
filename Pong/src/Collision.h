@@ -11,7 +11,8 @@ public:
 	Collision();
 	~Collision();
 	static Collision* instance();
-	void ballCollisionCheck();
+	void titleCollisionCheck();
+	void ballCollisionCheck(bool isGamePaused);
 
 	int leftPoints = 0, rightPoints = 0;
 
@@ -23,12 +24,12 @@ public:
 	std::stringstream leftScore;
 	std::stringstream rightScore;
 	std::map<std::string, Fonts> Text;
+	bool titleTop, titleBottom, titleLeft, titleRight;
+	bool bouncedPlayer, bouncedOpponent, bouncedBottom, bouncedBottomCheck, bouncedTop, bouncedTopCheck, touchedLeft, touchedRight, touchedGrass;
+	Timer* timer;
 
 private:
-
-	bool bouncedPlayer, bouncedOpponent, bouncedBottom, bouncedTop, touchedLeft, touchedRight;
 	Graphics* graphics;
 	Texture* texture;
-	Timer* timer;
 	static Collision* hInstance;
 };

@@ -5,7 +5,7 @@
 class AI
 {
 public:
-	void aiBehavior(bool isSingle);
+	void aiBehavior(bool isSingle, bool isGamePaused);
 	static AI* instance();
 	AI();
 	~AI();
