@@ -1,7 +1,7 @@
-# Pong (in progress...)
+# Pong
 
-Welcome to my restaurant because HOLY MOTHER OF SPAGHETTI CODES.
+The remake is complete! Made with SDL2.
 
-Making pong with SDL2 and C++.
+What I have learned: to use a game engine instead of a library. I DO NOT want to go through that again. 9/9 would not recommend.
 
-Still learning... (and crying)
+https://criosyom.itch.io/pong
