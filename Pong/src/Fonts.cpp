@@ -7,6 +7,7 @@ Fonts::Fonts()
 
 Fonts::~Fonts()
 {
+	delete graphics;
 	graphics = NULL;
 	TTF_CloseFont(text);
 }
@@ -20,11 +21,9 @@ void Fonts::loadText(const char* font, const char* displayText, SDL_Color textCo
 	if (surface == NULL) { std::cout << "Cannot make text surface: " << SDL_GetError() << '\n'; }
 	textTexture = SDL_CreateTextureFromSurface(graphics->getRenderer(), surface);
 	if (textTexture == NULL) { std::cout << "Cannot make text texture: " << TTF_GetError() << '\n'; }
-
 	hWidth = surface->w;
 	hHeight = surface->h;
 	SDL_FreeSurface(surface);
-
 }
 
 void Fonts::renderText(int xPos, int yPos, bool fromTopLeft)

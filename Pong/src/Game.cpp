@@ -135,13 +135,11 @@ void Game::loadContent()
 		texture->Textures["leftBoundary"] = new Texture(Vector2(-10.0f, hGraphics->getWindowHeight() / 2), NULL, "pads");
 		texture->Textures["rightBoundary"] = new Texture(Vector2(hGraphics->getWindowWidth() + 10.0f, hGraphics->getWindowHeight() / 2), NULL, "pads");
 		
-		hCollision->Text["gameOver()"].loadText("assets/SunflowerHighway.otf", "(Btw if you press any letter key on the title screen, something stupid might happen)", { 255, 255, 255 }, 15.0f);
 		texture->Textures["ball"]->loadTexture("assets/ballWhite.png");
 		hCollision->paddleSound = Mix_LoadWAV("assets/pongCollidePaddle.wav");
 		hCollision->borderSound = Mix_LoadWAV("assets/borderCollision.wav");
 		hCollision->scoreSound = Mix_LoadWAV("assets/scored.wav");
 		countDown = Mix_LoadWAV("assets/select.wav");
-
 		for (std::pair<std::string, Texture*> t : texture->Textures)
 		{
 			if (t.second->sameTextureStr == "pads")
@@ -152,8 +150,9 @@ void Game::loadContent()
 		ballTrail.loadTrail(texture->Textures["ball"], 6);
 		leftPaddleTrail.loadTrail(texture->Textures["playerPaddleMiddle"], 11);
 		rightPaddleTrail.loadTrail(texture->Textures["opponentPaddleMiddle"], 11);
-		hCollision->Text["instructions2"].loadText("assets/SunflowerHighway.otf", "Up = Up Arrow\n\nDown = Down Arrow", { 255, 255, 255 }, 25.0f);
 		hCollision->Text["fpsText"].loadText("assets/Hakugyokurou.ttf", "fps", { 255, 255, 255 }, 14.0f);
+		hCollision->Text["instructions2"].loadText("assets/SunflowerHighway.otf", "Up = Up Arrow\n\nDown = Down Arrow", { 255, 255, 255 }, 25.0f);
+		hCollision->Text["gameOver()"].loadText("assets/SunflowerHighway.otf", "(Btw if you press any letter key on the title screen, something stupid might happen)", { 255, 255, 255 }, 15.0f);
 		std::srand(std::time(NULL)); oddOrEven = rand() % 2;
 		oddOrEven < 1 ? texture->Textures["ball"]->rotate(180) : texture->Textures["ball"]->rotate(0);
 		gameInitialized = true;
@@ -200,23 +199,28 @@ void Game::run()
 			gameOver = gameOverTextDisplayed = gamePaused = true;
 		}
 		texture->Textures["ball"]->moving = false;
-		if (timer.getInstanceTime() <= 35)
+		if (timer.getInstanceTime() <= 35 && !count3)
 		{
+			hCollision->Text["firstTo5"].loadText("assets/SunflowerHighway.otf", "First to five!", { 255, 255, 255 }, 50.0f);
 			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", "3", { 155, 255, 155 }, 70.0f);
-			if (!soundPlayed3) { Mix_PlayChannel(-1, countDown, 0); soundPlayed3 = true; }
+			Mix_PlayChannel(-1, countDown, 0); 
+			count3 = true;
 		}
-		if (timer.getInstanceTime() <= 70 && timer.getInstanceTime() > 35)
+		if (timer.getInstanceTime() <= 70 && timer.getInstanceTime() > 35 && !count2)
 		{
 			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", "2", { 255, 255, 155 }, 70.0f);
-			if (!soundPlayed2) { Mix_PlayChannel(-1, countDown, 0); soundPlayed2 = true; }
+			Mix_PlayChannel(-1, countDown, 0);
+			count2 = true;
 		}
-		if (timer.getInstanceTime() <= 105 && timer.getInstanceTime() > 70)
+		if (timer.getInstanceTime() <= 105 && timer.getInstanceTime() > 70 && !count1)
 		{
 			hCollision->Text["countDown"].loadText("assets/Hakugyokurou.ttf", "1", { 255, 155, 155 }, 70.0f);
-			if (!soundPlayed1) { Mix_PlayChannel(-1, countDown, 0); soundPlayed1 = true; }
+			Mix_PlayChannel(-1, countDown, 0);
+			count1 = true;
 		}
 		if (timer.getInstanceTime() > 105 && !gamePaused)
 		{
+			SDL_DestroyTexture(hCollision->Text["firstTo5"].textTexture);
 			SDL_DestroyTexture(hCollision->Text["countDown"].textTexture);
 			texture->Textures["ball"]->translate(Vector2(-8.5f, 0.0f));
 		}
@@ -248,6 +252,7 @@ void Game::run()
 		hCollision->Text["playerPoints"].renderText(hGraphics->getWindowWidth() / 2 - 74, 70);
 		hCollision->Text["opponentPoints"].renderText(hGraphics->getWindowWidth() / 2 + 86, 70);
 		hCollision->Text["countDown"].renderText(hGraphics->getWindowWidth() / 2, hGraphics->getWindowHeight() / 2);
+		hCollision->Text["firstTo5"].renderText(hGraphics->getWindowWidth() / 2, 150);
 
 		if (singlePlayer) { hAI->aiBehavior(singlePlayer, gamePaused); }
 		if (gamePaused) { pauseScreen(); }
@@ -301,7 +306,7 @@ void Game::pauseScreen()
 		oddOrEven < 1 ? texture->Textures["ball"]->rotate(180) : texture->Textures["ball"]->rotate(0);
 		hCollision->bouncedPlayer = hCollision->bouncedOpponent = hCollision->bouncedBottom = hCollision->bouncedTop = hCollision->bouncedBottomCheck = 
 		hCollision->bouncedTopCheck = hCollision->touchedLeft = hCollision->touchedRight = hCollision->scored = 
-		gamePaused = gameOver = gameOverTextDisplayed = soundPlayed3 = soundPlayed2 = soundPlayed1 = false;
+		gamePaused = gameOver = gameOverTextDisplayed = count3 = count2 = count1 = false;
 		timer.resetInstance(); hCollision->timer->resetInstance();  break;
 	case 2:	hCollision->leftPoints = 0;  hCollision->rightPoints = 0;
 		hCollision->leftScore.str("");	hCollision->rightScore.str("");
@@ -316,7 +321,7 @@ void Game::pauseScreen()
 		oddOrEven < 1 ? texture->Textures["ball"]->rotate(180) : texture->Textures["ball"]->rotate(0);
 		hCollision->bouncedPlayer = hCollision->bouncedOpponent = hCollision->bouncedBottom = hCollision->bouncedTop = 
 		hCollision->bouncedBottomCheck = hCollision->bouncedTopCheck = hCollision->touchedLeft = hCollision->touchedRight = hCollision->scored = 
-		hQuitTitle = gamePaused = gameOver = gameOverTextDisplayed = soundPlayed3 = soundPlayed2 = soundPlayed1 = false;  hQuitGame = true;
+		hQuitTitle = gamePaused = gameOver = gameOverTextDisplayed = count3 = count2 = count1 = false;  hQuitGame = true;
 		timer.resetInstance(); hCollision->timer->resetInstance(); break;
 	}
 }

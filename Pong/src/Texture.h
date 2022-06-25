@@ -45,7 +45,7 @@ private:
 	Graphics* hGraphics;
 	Vector2 startingPos;
 	SDL_FRect hSrcRect, hDestRect;
-	Circle hCircle = {hGraphics->getWindowWidth() / 2.0f, hGraphics->getWindowHeight() / 2.0f, 11.0f };
+	Circle hCircle = {hGraphics->getWindowWidth() / 2.0f, hGraphics->getWindowHeight() / 2.0f, 12.0f };
 
 	SDL_FPoint anglePoint;
 	Texture* hParent;

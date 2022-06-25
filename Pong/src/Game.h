@@ -26,18 +26,15 @@ private:
 	Texture* texture;
 	Inputs inputs;
 	Timer timer;
-	TrailEffect titleBallTrail;
-	TrailEffect ballTrail;
-	TrailEffect leftPaddleTrail;
-	TrailEffect rightPaddleTrail;
+	TrailEffect titleBallTrail, ballTrail, leftPaddleTrail, rightPaddleTrail;
 
 	std::stringstream fpsCount;
 	SDL_FRect mid;
 	Mix_Chunk* countDown;
 
-	bool titleInitialized, titleTextsLoaded, singlePlayer, ballStarted, 
-	gameInitialized, gamePaused, gameOver, gameOverTextDisplayed, pauseTextsLoaded, 
-	keyReleased, keyReleased2 = true, soundPlayed3, soundPlayed2, soundPlayed1;
+	bool titleInitialized, titleTextsLoaded, singlePlayer, ballStarted,
+		gameInitialized, gamePaused, gameOver, gameOverTextDisplayed, 
+		pauseTextsLoaded, keyReleased, keyReleased2 = true, count3, count2, count1;
 	float FPS = 60.0f;
 	float frameTicks;
 	int countedFrames, oddOrEven;

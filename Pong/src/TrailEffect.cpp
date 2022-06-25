@@ -13,7 +13,6 @@ void TrailEffect::loadTrail(Texture* ent, int capacity)
 	entity = ent;
 	particleCap = capacity;
 	texture->TexturesVectors.emplace_back();
-	std::cout << texture->TexturesVectors.size() << '\n';
 	channel = texture->TexturesVectors.size() - 1;
 	for (int particleLoad = 0; particleLoad < particleCap; particleLoad++)
 	{

@@ -18,6 +18,8 @@ Collision::~Collision()
 {
 	delete hInstance;
 	hInstance = NULL;
+	delete texture;
+	texture = NULL;
 }
 
 Collision* Collision::instance()
@@ -68,8 +70,6 @@ bool circleBoxCollision(Texture* circle, Texture* box)
 	{
 		return true;
 	}
-
-	//std::cout << "Circle: { " << circle->getPos().x << ", " << circle->getPos().y << ", " << circle->getCircleCollider().r << " }	Closest point position: { " << cX << ", " << cY << " } " << "	Rec pos: { " << box->getPos().x << ", " << box->getPos().y << " }\n";
 	return false;
 }
 
